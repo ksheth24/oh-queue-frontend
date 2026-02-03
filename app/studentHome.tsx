@@ -11,33 +11,51 @@ export default function StudentHome() {
   const [name, setName] = useState("");
   const [section, setSection] = useState("");
   const [topic, setTopic] = useState("");
-  const [location, setLocation] = useState<"IN_PERSON" | "ONLINE">("IN_PERSON");
+  const [location, setLocation] =
+    useState<"IN_PERSON" | "ONLINE">("IN_PERSON");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [joined, setJoined] = useState(false);
   const [joinedAt, setJoinedAt] = useState<Date | null>(null);
+  const [id, setId] = useState<string | null>(null);
 
-  const [queueCount, setQueueCount] = useState<number>(0);
+  const [queueSpot, setQueueSpot] = useState<number | null>(null);
 
-  /* ---------------- Fetch queue count ---------------- */
-  const fetchQueueCount = async () => {
+  /* ---------------- Fetch queue spot (polling) ---------------- */
+  const fetchQueueSpot = async () => {
+    if (!id) return;
+
     try {
-      const res = await fetch("http://localhost:8080/api/queue/getQueueLength", {
-        credentials: "include",
-      });
-      if (!res.ok) return;
-      const count = await res.json();
-      setQueueCount(count);
+      console.log("Fetching queue spot for id:", id);
+
+      const res = await fetch(
+        `http://localhost:8080/api/queue/getQueueSpot/${id}`,
+        { credentials: "include" }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to fetch queue spot");
+        return;
+      }
+
+      const spot = await res.json();
+      setQueueSpot(spot);
     } catch (e) {
-      console.error("Failed to fetch queue count");
+      console.error("Failed to fetch queue spot", e);
     }
   };
 
+  /* ---------------- Start polling AFTER id exists ---------------- */
   useEffect(() => {
-    fetchQueueCount();
-  }, []);
+    if (!id) return;
+
+    fetchQueueSpot(); // immediate
+
+    const interval = setInterval(fetchQueueSpot, 5000);
+    return () => clearInterval(interval);
+  }, [id]);
 
   /* ---------------- Submit ---------------- */
   const submit = async (e: React.FormEvent) => {
@@ -46,26 +64,31 @@ export default function StudentHome() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8080/api/queue/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name,
-          section,
-          topic,
-          location,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:8080/api/queue/add",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name,
+            section,
+            topic,
+            location,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(msg || "Failed to join queue");
       }
 
+      const data = await res.json();
+
+      setId(String(data)); // IMPORTANT
       setJoined(true);
       setJoinedAt(new Date());
-      setQueueCount((prev) => prev + 1); // optimistic update
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -98,9 +121,14 @@ export default function StudentHome() {
         <div className="bg-white rounded-xl shadow-md p-8">
           {!joined ? (
             <>
-              <h2 className="text-xl font-semibold mb-6">Join Queue</h2>
+              <h2 className="text-xl font-semibold mb-6">
+                Join Queue
+              </h2>
 
-              <form className="space-y-5" onSubmit={submit}>
+              <form
+                className="space-y-5"
+                onSubmit={submit}
+              >
                 <input
                   placeholder="Name"
                   value={name}
@@ -140,6 +168,7 @@ export default function StudentHome() {
                     />
                     In-person
                   </label>
+
                   <label className="flex gap-2 items-center">
                     <input
                       type="radio"
@@ -166,7 +195,10 @@ export default function StudentHome() {
           ) : (
             <div className="flex flex-col items-center justify-center text-center">
               <CheckCircleIcon className="h-14 w-14 text-green-500 mb-4" />
-              <h2 className="text-xl font-semibold">You’re in the queue</h2>
+              <h2 className="text-xl font-semibold">
+                You’re in the queue
+              </h2>
+
               {joinedAt && (
                 <p className="text-sm text-slate-500 mt-2">
                   Joined at {joinedAt.toLocaleTimeString()}
@@ -176,15 +208,27 @@ export default function StudentHome() {
           )}
         </div>
 
-        {/* RIGHT CARD — SIMPLE */}
+        {/* RIGHT CARD — QUEUE SPOT */}
         <div className="bg-white rounded-xl shadow-md p-8 flex flex-col items-center justify-center">
           <UserGroupIcon className="h-12 w-12 text-indigo-600 mb-4" />
-          <p className="text-sm text-slate-500 mb-1">
-            People in Queue
-          </p>
-          <p className="text-4xl font-bold text-slate-900">
-            {queueCount}
-          </p>
+
+          {!joined ? (
+            <>
+              <p className="text-sm text-slate-500 mb-1">
+                Your spot in queue
+              </p>
+              <p className="text-4xl font-bold text-slate-400">—</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-slate-500 mb-1">
+                Your spot in queue
+              </p>
+              <p className="text-4xl font-bold text-slate-900">
+                {queueSpot !== null ? queueSpot + 1 : "…"}
+              </p>
+            </>
+          )}
         </div>
       </main>
     </div>
