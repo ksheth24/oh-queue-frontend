@@ -8,7 +8,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 // API Base URL - add http:// prefix
-const API_BASE_URL = "https://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+const API_BASE_URL = "/api/proxy";
 
 export default function StudentHome() {
   const [name, setName] = useState("");

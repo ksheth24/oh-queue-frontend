@@ -14,7 +14,7 @@ type QueueEntry = {
 };
 
 // API Base URL - moved outside component for better practice
-const API_BASE_URL = "https://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+const API_BASE_URL = "/api/proxy";
 
 export default function TADashboard() {
   const router = useRouter();
