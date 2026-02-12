@@ -34,7 +34,7 @@ export default function StudentHome() {
       console.log("Fetching queue spot for id:", id);
 
       const res = await fetch(
-        `${API_BASE_URL}/api/queue/getQueueSpot/${id}`,
+        "api/proxy/api/queue/getQueueSpot/${id}",
         { credentials: "include" }
       );
 
@@ -68,7 +68,7 @@ export default function StudentHome() {
 
     try {
       const res = await fetch(
-        `${API_BASE_URL}/api/queue/add`,
+        "api/proxy/api/queue/add`",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

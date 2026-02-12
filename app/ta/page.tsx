@@ -28,7 +28,7 @@ export default function TADashboard() {
   // ─────────────────────────────────────────────
   const fetchQueue = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/queue/getQueue`);
+      const res = await fetch("/api/proxy/api/queue/getQueue")
       if (!res.ok) throw new Error("Failed to fetch queue");
       const data: QueueEntry[] = await res.json();
       // Ensure each entry has a status field, defaulting to "Queue" if missing
@@ -46,7 +46,7 @@ export default function TADashboard() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/queue/updateStatus`, {
+      const res = await fetch("/api/proxy/api/queue/updateStatus", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
