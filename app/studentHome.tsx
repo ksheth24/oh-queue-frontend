@@ -7,6 +7,9 @@ import {
 
 import React, { useEffect, useState } from "react";
 
+// API Base URL - add http:// prefix
+const API_BASE_URL = "http://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+
 export default function StudentHome() {
   const [name, setName] = useState("");
   const [section, setSection] = useState("");
@@ -31,7 +34,7 @@ export default function StudentHome() {
       console.log("Fetching queue spot for id:", id);
 
       const res = await fetch(
-        `http://localhost:8080/api/queue/getQueueSpot/${id}`,
+        `${API_BASE_URL}/api/queue/getQueueSpot/${id}`,
         { credentials: "include" }
       );
 
@@ -65,7 +68,7 @@ export default function StudentHome() {
 
     try {
       const res = await fetch(
-        "http://localhost:8080/api/queue/add",
+        `${API_BASE_URL}/api/queue/add`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -196,7 +199,7 @@ export default function StudentHome() {
             <div className="flex flex-col items-center justify-center text-center">
               <CheckCircleIcon className="h-14 w-14 text-green-500 mb-4" />
               <h2 className="text-xl font-semibold">
-                You’re in the queue
+                You're in the queue
               </h2>
 
               {joinedAt && (

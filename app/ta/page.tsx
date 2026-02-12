@@ -13,6 +13,9 @@ type QueueEntry = {
   status?: "Queue" | "In Progress" | "Done";  // Optional, defaults to "Queue"
 };
 
+// API Base URL - moved outside component for better practice
+const API_BASE_URL = "http://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+
 export default function TADashboard() {
   const router = useRouter();
 
@@ -25,7 +28,7 @@ export default function TADashboard() {
   // ─────────────────────────────────────────────
   const fetchQueue = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/queue/getQueue");
+      const res = await fetch(`${API_BASE_URL}/api/queue/getQueue`);
       if (!res.ok) throw new Error("Failed to fetch queue");
       const data: QueueEntry[] = await res.json();
       // Ensure each entry has a status field, defaulting to "Queue" if missing
@@ -41,9 +44,9 @@ export default function TADashboard() {
     }
   };
 
-   const updateStatus = async (id: number, status: string) => {
+  const updateStatus = async (id: number, status: string) => {
     try {
-      const res = await fetch("http://localhost:8080/api/queue/updateStatus", {
+      const res = await fetch(`${API_BASE_URL}/api/queue/updateStatus`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,20 +58,20 @@ export default function TADashboard() {
         }),
       });
       if (!res.ok) throw new Error("Failed to update queue");
+      // Refresh queue after update
+      await fetchQueue();
     } catch (err) {
-      console.error("Failed to fetch queue", err);
-    } finally {
-      setLoading(false);
+      console.error("Failed to update status", err);
     }
   };
 
-useEffect(() => {
-  fetchQueue(); // initial load
+  useEffect(() => {
+    fetchQueue(); // initial load
 
-  const interval = setInterval(fetchQueue, 100); // every 5 seconds
+    const interval = setInterval(fetchQueue, 5000); // every 5 seconds (changed from 100ms!)
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
 
   // Safe derived value
   const nextStudent = queue.length > 0 ? queue[0] : null;
@@ -78,7 +81,7 @@ useEffect(() => {
   // ─────────────────────────────────────────────
   const clearQueue = async () => {
     try {
-      await fetch("http://localhost:8080/api/queue/clear", {
+      await fetch(`${API_BASE_URL}/api/queue/clear`, {
         method: "POST",
       });
       setQueue([]);
