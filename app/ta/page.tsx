@@ -14,7 +14,7 @@ type QueueEntry = {
 };
 
 // API Base URL - moved outside component for better practice
-const API_BASE_URL = "http://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+const API_BASE_URL = "/api/proxy";
 
 export default function TADashboard() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function TADashboard() {
   // ─────────────────────────────────────────────
   const fetchQueue = async () => {
     try {
-      const res = await fetch("/api/proxy/api/queue/getQueue")
+      const res = await fetch(`${API_BASE_URL}/api/queue/getQueue`)
       if (!res.ok) throw new Error("Failed to fetch queue");
       const data: QueueEntry[] = await res.json();
       // Ensure each entry has a status field, defaulting to "Queue" if missing
@@ -46,12 +46,12 @@ export default function TADashboard() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      const res = await fetch("/api/proxy/api/queue/updateStatus", {
+      const res = await fetch(`${API_BASE_URL}/api/queue/updateStatus`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+        credentials: "omit",
         body: JSON.stringify({
           id,
           status
