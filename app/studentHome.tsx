@@ -7,8 +7,8 @@ import {
 
 import React, { useEffect, useState } from "react";
 
-// API Base URL - add http:// prefix
-const API_BASE_URL = "http://oh-queue-backend-prod-env.eba-xh3hcv4y.us-east-2.elasticbeanstalk.com";
+// Use proxy instead of direct backend calls
+const API_BASE_URL = "/api/proxy";
 
 export default function StudentHome() {
   const [name, setName] = useState("");
@@ -34,8 +34,8 @@ export default function StudentHome() {
       console.log("Fetching queue spot for id:", id);
 
       const res = await fetch(
-        "api/proxy/api/queue/getQueueSpot/${id}",
-        { credentials: "include" }
+        `${API_BASE_URL}/api/queue/getQueueSpot/${id}`,
+        { credentials: "omit" }
       );
 
       if (!res.ok) {
@@ -68,11 +68,11 @@ export default function StudentHome() {
 
     try {
       const res = await fetch(
-        "api/proxy/api/queue/add`",
+        `${API_BASE_URL}/api/queue/add`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
+          credentials: "omit",
           body: JSON.stringify({
             name,
             section,
